@@ -3,55 +3,291 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
-  <title>LocalGPT – WebLLM im Browser</title>
+  <title>Local WebLLM Chat</title>
   <style>
-    :root{--bg:#000;--panel:#0f0f10;--panel2:#1f1f20;--panel3:#2b2b2d;--line:#242426;--text:#f6f6f6;--muted:#a6a6a6;--soft:#d9d9d9;--accent:#fff;--danger:#ff5f57;--good:#34c759;--composer-h:86px;--top-h:56px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif}*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);overflow:hidden}button,select,textarea{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}.app{height:100dvh;display:grid;grid-template-rows:var(--top-h) 1fr;position:relative}.topbar{height:var(--top-h);display:grid;grid-template-columns:52px 1fr 96px;align-items:center;border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top);background:rgba(0,0,0,.92);backdrop-filter:blur(16px);z-index:20}.iconbtn{height:44px;width:44px;margin:auto;border-radius:999px;display:grid;place-items:center;font-size:24px}.iconbtn:active,.pill:active{background:#1d1d1f}.title{justify-self:center;display:flex;gap:5px;align-items:center;font-weight:700;font-size:18px;letter-spacing:-.01em}.title select{appearance:none;background:transparent;color:#fff;border:0;font-weight:800;max-width:230px;text-align:center;text-align-last:center}.chev{color:#bdbdbd;font-size:22px;line-height:0}.actions{display:flex;justify-content:flex-end;padding-right:10px;gap:6px}.main{height:calc(100dvh - var(--top-h));position:relative;overflow:hidden}.messages{height:100%;overflow:auto;padding:18px clamp(14px,5vw,32px) calc(var(--composer-h) + 28px + env(safe-area-inset-bottom));scroll-behavior:smooth}.welcome{min-height:calc(100% - 30px);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:88px}.memory{position:absolute;top:12px;left:0;right:0;text-align:center;color:#e9e9e9;font-size:14px;font-weight:650}.suggestions{width:min(560px,90vw);display:grid;gap:22px}.suggestion{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;color:#f5f5f5;font-weight:650;font-size:18px}.suggestion svg,.emptyicon svg{width:23px;height:23px}.thread{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:22px}.msg{display:flex;gap:12px;line-height:1.45;font-size:16px}.msg.user{justify-content:flex-end}.bubble{max-width:min(680px,86%);padding:12px 15px;border-radius:24px;background:var(--panel2);white-space:pre-wrap;word-wrap:break-word}.assistant .bubble{background:transparent;padding:0;border-radius:0;max-width:100%}.avatar{flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#000;font-weight:900;font-size:13px}.composer-wrap{position:absolute;left:0;right:0;bottom:0;padding:10px clamp(10px,5vw,32px) calc(10px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(0,0,0,0),#000 28%);z-index:10}.composer{max-width:820px;margin:0 auto;display:grid;grid-template-columns:48px 1fr 48px;gap:8px;align-items:end}.plus{width:46px;height:46px;border-radius:999px;background:#242426;color:#fff;display:grid;place-items:center;font-size:32px;line-height:1}.inputbox{min-height:48px;background:#252527;border-radius:26px;display:grid;grid-template-columns:1fr 44px;align-items:end;padding:5px 5px 5px 18px}.inputbox textarea{height:38px;max-height:130px;resize:none;outline:0;border:0;background:transparent;color:#fff;padding:8px 0;font-size:16px}.inputbox textarea::placeholder{color:#8c8c8c;font-weight:650}.send{width:38px;height:38px;border-radius:999px;background:#fff;color:#000;display:grid;place-items:center;font-size:22px;font-weight:900}.send:disabled{opacity:.35}.voice{width:46px;height:46px;border-radius:999px;background:#fff;color:#000;display:grid;place-items:center}.drawer{position:absolute;inset:0 auto 0 0;width:min(390px,88vw);background:#111;z-index:60;transform:translateX(-105%);transition:.24s ease;box-shadow:25px 0 60px rgba(0,0,0,.5);padding:calc(18px + env(safe-area-inset-top)) 12px 18px}.drawer.open{transform:none}.scrim{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none}.scrim.show{display:block}.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 24px}.brand{font-size:26px;font-weight:800}.search{font-size:27px}.navitem{height:52px;display:flex;align-items:center;gap:14px;border-radius:14px;padding:0 16px;font-size:19px;font-weight:650}.navitem.active{background:#2b2b2d}.label{color:#f0f0f0;font-weight:800;margin:24px 16px 8px;font-size:18px}.model-panel{position:absolute;right:14px;top:64px;width:min(360px,calc(100vw - 28px));background:#171719;border:1px solid #2c2c2f;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:70;padding:12px;display:none}.model-panel.show{display:block}.model-card{display:grid;grid-template-columns:1fr auto;gap:8px;padding:13px;border-radius:15px}.model-card:hover,.model-card.active{background:#28282a}.model-name{font-weight:800}.model-meta{color:#aaa;font-size:13px;margin-top:3px}.badge{align-self:center;font-size:12px;color:#111;background:#fff;border-radius:999px;padding:5px 8px;font-weight:800}.controls{border-top:1px solid var(--line);margin-top:8px;padding-top:10px;display:grid;gap:8px}.pill{height:42px;border-radius:999px;background:#252527;font-weight:750}.pill.danger{color:#ff9b96}.progress-card{position:absolute;left:50%;top:74px;transform:translateX(-50%);width:min(560px,calc(100vw - 28px));background:#18181a;border:1px solid #303034;border-radius:22px;padding:16px;z-index:80;box-shadow:0 16px 60px rgba(0,0,0,.6);display:none}.progress-card.show{display:block}.progress-top{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px;font-weight:800}.progress-text{color:#aaa;font-size:13px;margin-top:8px;min-height:18px}.bar{height:10px;background:#303034;border-radius:999px;overflow:hidden}.bar>div{height:100%;width:0%;background:#fff;border-radius:999px;transition:width .18s ease}.toast{position:absolute;left:50%;bottom:calc(var(--composer-h) + 26px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#252527;border:1px solid #37373a;color:#fff;border-radius:999px;padding:10px 14px;z-index:90;display:none;font-weight:700}.toast.show{display:block}@media (min-width:900px){.app{grid-template-columns:300px 1fr;grid-template-rows:1fr}.topbar{grid-column:2;height:56px}.main{grid-column:2;height:100dvh;padding-top:56px}.drawer{position:relative;grid-column:1;grid-row:1;transform:none;z-index:1;width:300px;border-right:1px solid var(--line);box-shadow:none}.scrim,.topbar .iconbtn:first-child{display:none!important}.messages{height:100dvh}.progress-card{top:74px}.model-panel{top:64px}}@media (max-width:520px){.title select{max-width:170px}.composer{grid-template-columns:48px 1fr}.voice{display:none}.suggestion{font-size:16px}.bubble{max-width:90%}}
+    :root {
+      --bg: #212121;
+      --panel: #2f2f2f;
+      --panel-2: #171717;
+      --text: #ececec;
+      --muted: #b4b4b4;
+      --line: #424242;
+      --accent: #10a37f;
+      --danger: #ff6b6b;
+      --shadow: rgba(0,0,0,.28);
+      --radius: 18px;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+    body { height: 100dvh; overflow: hidden; }
+    button, select, textarea { font: inherit; }
+
+    .app { height: 100dvh; display: grid; grid-template-columns: 292px 1fr; }
+
+    .sidebar {
+      background: var(--panel-2);
+      border-right: 1px solid var(--line);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .logo { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #10a37f, #7dd3fc); }
+
+    .side-card {
+      background: #242424;
+      border: 1px solid #343434;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    label { color: var(--muted); font-size: 12px; }
+    select {
+      width: 100%;
+      background: #303030;
+      border: 1px solid #4b4b4b;
+      border-radius: 12px;
+      padding: 10px;
+      color: var(--text);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #4b4b4b;
+      background: #303030;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn.danger { color: #ffd6d6; background: rgba(255,107,107,.09); }
+
+    .progress-wrap { display: none; flex-direction: column; gap: 6px; }
+    .progress-wrap.active { display: flex; }
+
+    .progress {
+      height: 8px;
+      background: #151515;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width .2s;
+    }
+
+    .status { font-size: 12px; color: var(--muted); }
+
+    .main { display: grid; grid-template-rows: auto 1fr auto; }
+
+    .topbar {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .messages {
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .msg { margin-bottom: 14px; }
+    .user .bubble {
+      background: var(--panel);
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .assistant .bubble {
+      padding: 10px;
+    }
+
+    .composer {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    textarea {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid #4b4b4b;
+      border-radius: 12px;
+      padding: 8px;
+      color: var(--text);
+      resize: none;
+    }
+
+    .send {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: var(--text);
+      color: black;
+      cursor: pointer;
+    }
+
+    .error {
+      background: rgba(255,107,107,.2);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside id="drawer" class="drawer">
-      <div class="drawer-head"><div class="brand">ChatGPT</div><button class="search" id="closeDrawer">⌕</button></div>
-      <div class="navitem">▧ <span>Images</span></div><div class="navitem">⌘ <span>Apps</span></div>
-      <div class="label">GPTs</div><div class="navitem">◈ <span>StudentGPT</span></div>
-      <div class="label">Projects</div><div class="navitem">▣ <span>New project</span></div><div class="navitem active">◉ <span>LocalGPT Browser</span></div>
-      <div class="label">Recents</div><div class="navitem">LLM Lokal im Browser</div><div class="navitem">Tense Usage Explanation</div>
-    </aside>
-    <header class="topbar">
-      <button class="iconbtn" id="menuBtn">≡</button>
-      <div class="title"><button id="modelToggle" class="title"><span id="titleModel">LocalGPT</span><span class="chev">›</span></button></div>
-      <div class="actions"><button class="iconbtn" title="Neuer Chat" id="newChat">✎</button><button class="iconbtn" id="moreBtn">…</button></div>
-    </header>
-    <div id="scrim" class="scrim"></div>
-    <section class="main">
-      <div class="memory">◒ &nbsp; Local model · runs in browser</div>
-      <div id="modelPanel" class="model-panel"></div>
-      <div id="progress" class="progress-card"><div class="progress-top"><span id="progressTitle">Modell wird geladen</span><span id="progressPct">0%</span></div><div class="bar"><div id="progressBar"></div></div><div id="progressText" class="progress-text"></div></div>
-      <div id="toast" class="toast"></div>
-      <div id="messages" class="messages"><div id="welcome" class="welcome"><div class="suggestions"><button class="suggestion" data-prompt="Erkläre kurz, was du lokal im Browser kannst.">▧ <span>Create an image</span></button><button class="suggestion" data-prompt="Schreibe eine kurze Produktbeschreibung für eine lokale Browser-KI.">✎ <span>Write or edit</span></button><button class="suggestion" data-prompt="Was sind die Grenzen eines lokalen 1B-Modells auf iOS Safari?">◎ <span>Look something up</span></button></div></div><div id="thread" class="thread"></div></div>
-      <div class="composer-wrap"><div class="composer"><button class="plus" id="loadBtn">+</button><div class="inputbox"><textarea id="prompt" rows="1" placeholder="Ask ChatGPT"></textarea><button id="send" class="send">↑</button></div><button class="voice" id="stopBtn">▮▮</button></div></div>
-    </section>
-  </div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"></div>
+      Local WebLLM
+    </div>
+
+    <div class="side-card">
+      <label>Modell</label>
+      <select id="modelSelect">
+        <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">1B Modell</option>
+        <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">~2B Modell</option>
+        <option value="gemma-2-2b-it-q4f16_1-MLC">Gemma 2B</option>
+        <option value="Phi-3.5-mini-instruct-q4f16_1-MLC-1k">Phi Mini</option>
+      </select>
+      <button class="btn primary" id="loadBtn">Laden</button>
+    </div>
+
+    <div class="side-card progress-wrap" id="progressWrap">
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="status" id="status">Bereit</div>
+    </div>
+
+    <div class="side-card">
+      <button class="btn" id="newChat">Neuer Chat</button>
+      <button class="btn danger" id="clearCache">Cache löschen</button>
+    </div>
+
+    <div id="errorBox"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div id="state">Nicht geladen</div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <form class="composer" id="form">
+      <textarea id="input"></textarea>
+      <button class="send">↑</button>
+    </form>
+  </main>
+</div>
+
 <script type="module">
 import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
-const MODELS=[
- {id:"Llama-3.2-1B-Instruct-q4f16_1-MLC",name:"Llama 3.2 1B",meta:"~879 MB VRAM · beste iOS-Wahl",tag:"1B"},
- {id:"Qwen2.5-0.5B-Instruct-q4f16_1-MLC",name:"Qwen 2.5 0.5B",meta:"~945 MB VRAM · sehr klein",tag:"0.5B"},
- {id:"SmolLM2-360M-Instruct-q4f16_1-MLC",name:"SmolLM2 360M",meta:"~376 MB VRAM · Fallback",tag:"Tiny"},
- {id:"Qwen2.5-1.5B-Instruct-q4f16_1-MLC",name:"Qwen 2.5 1.5B",meta:"~1.6 GB VRAM · stärker",tag:"1.5B"},
- {id:"Llama-3.2-3B-Instruct-q4f16_1-MLC",name:"Llama 3.2 3B",meta:"~2.3 GB VRAM · eher iPad/Mac",tag:"3B"}
-];
-let selected=MODELS[0],engine=null,currentModelId=null,busy=false,abort=false,messages=[];
-const $=id=>document.getElementById(id);const thread=$("thread"),welcome=$("welcome"),promptEl=$("prompt"),sendBtn=$("send");
-function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2400)}
-function setProgress(show,p=0,text=""){const c=$("progress");c.classList.toggle("show",show);$("progressPct").textContent=Math.round(p*100)+"%";$("progressBar").style.width=Math.round(p*100)+"%";$("progressText").textContent=text||""}
-function renderModels(){const p=$("modelPanel");p.innerHTML=MODELS.map((m,i)=>`<button class="model-card ${m.id===selected.id?'active':''}" data-i="${i}"><div><div class="model-name">${m.name}</div><div class="model-meta">${m.meta}</div></div><span class="badge">${m.tag}</span></button>`).join("")+`<div class="controls"><button class="pill" id="preload">Ausgewähltes Modell laden</button><button class="pill danger" id="clearModel">Modell-Dateien löschen</button></div>`;p.querySelectorAll(".model-card").forEach(b=>b.onclick=()=>{selected=MODELS[+b.dataset.i];$("titleModel").textContent=selected.name;renderModels();});$("preload").onclick=()=>initEngine();$("clearModel").onclick=clearAllStorage}renderModels();$("titleModel").textContent=selected.name;
-async function initEngine(){if(!navigator.gpu){toast("WebGPU ist nicht verfügbar. iOS Safari benötigt WebGPU-Unterstützung.");return null}if(engine&&currentModelId===selected.id)return engine;if(busy)return null;busy=true;setProgress(true,0,"Starte WebGPU…");try{engine=await CreateMLCEngine(selected.id,{initProgressCallback:(r)=>setProgress(true,r.progress||0,r.text||"Lade Modell…")});currentModelId=selected.id;setProgress(true,1,"Fertig");setTimeout(()=>setProgress(false),900);toast(selected.name+" ist bereit");return engine}catch(e){setProgress(false);toast("Fehler beim Laden: "+(e?.message||e));return null}finally{busy=false}}
-function addMsg(role,text){welcome.style.display="none";const row=document.createElement("div");row.className="msg "+role;row.innerHTML=role==="assistant"?`<div class="avatar">G</div><div class="bubble"></div>`:`<div class="bubble"></div>`;row.querySelector(".bubble").textContent=text;thread.appendChild(row);$("messages").scrollTop=$("messages").scrollHeight;return row.querySelector(".bubble")}
-async function send(){const text=promptEl.value.trim();if(!text||busy)return;promptEl.value="";addMsg("user",text);messages.push({role:"user",content:text});const eng=await initEngine();if(!eng)return;const out=addMsg("assistant","");busy=true;abort=false;try{const stream=await eng.chat.completions.create({messages,temperature:.7,stream:true});let ans="";for await(const chunk of stream){if(abort)break;const delta=chunk.choices?.[0]?.delta?.content||"";ans+=delta;out.textContent=ans;$("messages").scrollTop=$("messages").scrollHeight}messages.push({role:"assistant",content:ans||"Abgebrochen."})}catch(e){out.textContent="Fehler: "+(e?.message||e)}finally{busy=false}}
-async function clearAllStorage(){if(!confirm("Alle lokal gecachten Modell-Dateien dieser Seite löschen?"))return;try{if(engine){await engine.unload?.();engine=null;currentModelId=null}if(indexedDB.databases){for(const db of await indexedDB.databases()){if(db.name) indexedDB.deleteDatabase(db.name)}}for(const k of await caches.keys()) await caches.delete(k);localStorage.clear();sessionStorage.clear();toast("Cache gelöscht. Seite wird neu geladen…");setTimeout(()=>location.reload(),900)}catch(e){toast("Löschen fehlgeschlagen: "+(e?.message||e))}}
-sendBtn.onclick=send;promptEl.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});promptEl.addEventListener("input",()=>{promptEl.style.height="38px";promptEl.style.height=Math.min(promptEl.scrollHeight,130)+"px"});$("loadBtn").onclick=()=>initEngine();$("stopBtn").onclick=()=>{abort=true;toast("Antwort gestoppt")};$("newChat").onclick=()=>{messages=[];thread.innerHTML="";welcome.style.display="flex";toast("Neuer Chat")};$("modelToggle").onclick=()=>$("modelPanel").classList.toggle("show");$("moreBtn").onclick=()=>$("modelPanel").classList.toggle("show");$("menuBtn").onclick=()=>{$("drawer").classList.add("open");$("scrim").classList.add("show")};$("closeDrawer").onclick=$("scrim").onclick=()=>{$("drawer").classList.remove("open");$("scrim").classList.remove("show")};document.querySelectorAll(".suggestion").forEach(b=>b.onclick=()=>{promptEl.value=b.dataset.prompt;send()});
+
+const state = document.getElementById("state");
+const bar = document.getElementById("bar");
+const status = document.getElementById("status");
+const progressWrap = document.getElementById("progressWrap");
+const errorBox = document.getElementById("errorBox");
+const messagesEl = document.getElementById("messages");
+
+let engine = null;
+let messages = JSON.parse(localStorage.getItem("chat") || "[]");
+
+function save() {
+  localStorage.setItem("chat", JSON.stringify(messages));
+}
+
+function render() {
+  messagesEl.innerHTML = "";
+  messages.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "msg " + m.role;
+    div.innerHTML = '<div class="bubble"></div>';
+    div.querySelector(".bubble").textContent = m.content;
+    messagesEl.appendChild(div);
+  });
+}
+
+render();
+
+if (!("gpu" in navigator)) {
+  errorBox.innerHTML = '<div class="error">WebGPU nicht verfügbar.</div>';
+}
+
+document.getElementById("loadBtn").onclick = async () => {
+  const model = document.getElementById("modelSelect").value;
+  progressWrap.classList.add("active");
+
+  engine = await CreateMLCEngine(model, {
+    initProgressCallback: (p) => {
+      bar.style.width = (p.progress * 100) + "%";
+      status.textContent = p.text;
+    }
+  });
+
+  state.textContent = "Bereit";
+};
+
+document.getElementById("form").onsubmit = async (e) => {
+  e.preventDefault();
+  if (!engine) return;
+
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = "";
+
+  messages.push({ role: "user", content: text });
+  render();
+
+  const msg = { role: "assistant", content: "" };
+  messages.push(msg);
+  render();
+
+  const stream = await engine.chat.completions.create({
+    messages,
+    stream: true
+  });
+
+  for await (const chunk of stream) {
+    const t = chunk.choices[0].delta?.content || "";
+    msg.content += t;
+    render();
+  }
+
+  save();
+};
+
+document.getElementById("newChat").onclick = () => {
+  messages = [];
+  save();
+  render();
+};
+
+document.getElementById("clearCache").onclick = async () => {
+  if ("caches" in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+  }
+  localStorage.clear();
+  location.reload();
+};
 </script>
 </body>
 </html>
