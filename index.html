@@ -1,261 +1,275 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Local WebLLM Chat</title>
-  <style>
-    :root {
-      --bg: #212121;
-      --panel: #2f2f2f;
-      --panel-2: #171717;
-      --text: #ececec;
-      --muted: #b4b4b4;
-      --line: #424242;
-      --accent: #10a37f;
-      --danger: #ff6b6b;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lokale KI im Browser</title>
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: system-ui; }
+<style>
+body{
+  margin:0;
+  padding:20px;
+  background:#0b1020;
+  color:white;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+}
 
-    .app { display: grid; grid-template-columns: 280px 1fr; height: 100%; }
+h1{
+  font-size:48px;
+  margin-bottom:20px;
+}
 
-    .sidebar {
-      background: var(--panel-2);
-      padding: 12px;
-      border-right: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+.card{
+  background:#121a2f;
+  border-radius:24px;
+  padding:20px;
+  margin-bottom:20px;
+}
 
-    .side-card {
-      background: #242424;
-      padding: 10px;
-      border-radius: 10px;
-    }
+textarea{
+  width:100%;
+  min-height:140px;
+  background:#09101f;
+  color:white;
+  border:none;
+  border-radius:18px;
+  padding:16px;
+  font-size:16px;
+  box-sizing:border-box;
+}
 
-    select, button {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      margin-top: 5px;
-    }
+select{
+  background:#09101f;
+  color:white;
+  border:none;
+  padding:12px;
+  border-radius:12px;
+}
 
-    button { cursor: pointer; }
+button{
+  margin-top:12px;
+  border:none;
+  background:#60a5fa;
+  color:black;
+  padding:14px 18px;
+  border-radius:999px;
+  font-weight:700;
+  cursor:pointer;
+}
 
-    .primary { background: var(--accent); color: white; }
-    .danger { background: rgba(255,107,107,.2); color: #ffd6d6; }
+button:disabled{
+  opacity:.5;
+}
 
-    .progress {
-      height: 6px;
-      background: #111;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    .bar {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-    }
-
-    .main {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .topbar {
-      padding: 10px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-    }
-
-    .msg { margin-bottom: 10px; }
-    .user .bubble {
-      background: var(--panel);
-      padding: 8px;
-      border-radius: 10px;
-    }
-
-    .assistant .bubble {
-      padding: 8px;
-    }
-
-    .composer {
-      display: flex;
-      padding: 10px;
-      gap: 8px;
-      border-top: 1px solid var(--line);
-    }
-
-    textarea {
-      flex: 1;
-      resize: none;
-      padding: 8px;
-      border-radius: 10px;
-      border: none;
-      background: var(--panel);
-      color: var(--text);
-    }
-
-    .send {
-      width: 40px;
-      border-radius: 50%;
-      border: none;
-      background: white;
-      cursor: pointer;
-    }
-
-    .error {
-      background: rgba(255,0,0,.2);
-      padding: 8px;
-      border-radius: 8px;
-    }
-  </style>
+.message{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  background:#1b2747;
+  white-space:pre-wrap;
+}
+</style>
 </head>
+
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="side-card">
-      <label>Modell</label>
-      <select id="model">
-        <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">1B Modell</option>
-        <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">2B Modell</option>
-        <option value="gemma-2-2b-it-q4f16_1-MLC">Gemma</option>
-        <option value="Phi-3.5-mini-instruct-q4f16_1-MLC-1k">Phi</option>
-      </select>
-      <button class="primary" id="load">Modell laden</button>
-    </div>
 
-    <div class="side-card">
-      <div class="progress"><div class="bar" id="bar"></div></div>
-      <div id="status">Bereit</div>
-    </div>
+<h1>Lokale KI im Browser</h1>
 
-    <div class="side-card">
-      <button id="new">Neuer Chat</button>
-      <button class="danger" id="clear">Cache löschen</button>
-    </div>
+<div class="card">
 
-    <div id="error"></div>
-  </aside>
+<p id="status">
+Prüfe WebGPU...
+</p>
 
-  <main class="main">
-    <div class="topbar" id="state">Nicht geladen</div>
-    <div class="messages" id="messages"></div>
+<select id="model">
 
-    <form class="composer" id="form">
-      <textarea id="input"></textarea>
-      <button class="send">↑</button>
-    </form>
-  </main>
+<option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">
+Qwen 0.5B
+</option>
+
+<option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">
+Llama 3.2 1B
+</option>
+
+</select>
+
+<br><br>
+
+<button id="loadBtn">
+Modell laden
+</button>
+
+<p id="log"></p>
+
+</div>
+
+<div class="card">
+
+<textarea
+id="prompt"
+placeholder="Nachricht eingeben..."
+></textarea>
+
+<button id="sendBtn" disabled>
+Senden
+</button>
+
+<div id="chat"></div>
+
 </div>
 
 <script type="module">
-import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 
-const state = document.getElementById("state");
-const bar = document.getElementById("bar");
-const status = document.getElementById("status");
-const messagesEl = document.getElementById("messages");
-const errorEl = document.getElementById("error");
+const statusEl =
+document.getElementById("status");
+
+const logEl =
+document.getElementById("log");
+
+const loadBtn =
+document.getElementById("loadBtn");
+
+const sendBtn =
+document.getElementById("sendBtn");
+
+const promptEl =
+document.getElementById("prompt");
+
+const chatEl =
+document.getElementById("chat");
+
+const modelEl =
+document.getElementById("model");
 
 let engine = null;
-let messages = JSON.parse(localStorage.getItem("chat") || "[]");
 
-function save() {
-  localStorage.setItem("chat", JSON.stringify(messages));
+if("gpu" in navigator){
+
+  statusEl.textContent =
+  "✅ WebGPU verfügbar";
+
+}else{
+
+  statusEl.textContent =
+  "❌ WebGPU nicht verfügbar";
+
 }
 
-function render() {
-  messagesEl.innerHTML = "";
-  messages.forEach(m => {
-    const div = document.createElement("div");
-    div.className = "msg " + m.role;
-    div.innerHTML = '<div class="bubble"></div>';
-    div.querySelector(".bubble").textContent = m.content;
-    messagesEl.appendChild(div);
-  });
+function addMessage(role,text){
+
+  const div =
+  document.createElement("div");
+
+  div.className = "message";
+
+  div.innerHTML =
+  "<b>" + role + ":</b><br>" + text;
+
+  chatEl.appendChild(div);
+
+  return div;
 }
 
-render();
+loadBtn.onclick = async () => {
 
-if (!("gpu" in navigator)) {
-  errorEl.innerHTML = '<div class="error">WebGPU nicht verfügbar</div>';
-}
+  loadBtn.disabled = true;
 
-document.getElementById("load").onclick = async () => {
-  const model = document.getElementById("model").value;
+  logEl.textContent =
+  "Lade WebLLM...";
 
-  engine = await CreateMLCEngine(model, {
-    initProgressCallback: (p) => {
-      bar.style.width = (p.progress * 100) + "%";
-      status.textContent = p.text;
+  try{
+
+    const webllm =
+    await import(
+      "https://esm.run/@mlc-ai/web-llm"
+    );
+
+    logEl.textContent =
+    "Lade Modell...";
+
+    engine =
+    await webllm.CreateMLCEngine(
+      modelEl.value,
+      {
+        initProgressCallback:(p)=>{
+
+          logEl.textContent =
+          p.text || "Lade...";
+        }
+      }
+    );
+
+    logEl.textContent =
+    "✅ Modell bereit";
+
+    sendBtn.disabled = false;
+
+  }catch(error){
+
+    console.error(error);
+
+    logEl.textContent =
+    "Fehler: " + error.message;
+
+    loadBtn.disabled = false;
+  }
+};
+
+sendBtn.onclick = async () => {
+
+  const text =
+  promptEl.value.trim();
+
+  if(!text || !engine) return;
+
+  addMessage("Du",text);
+
+  promptEl.value = "";
+
+  sendBtn.disabled = true;
+
+  const out =
+  addMessage("KI","");
+
+  try{
+
+    const stream =
+    await engine.chat.completions.create({
+
+      messages:[
+        {
+          role:"system",
+          content:
+          "Antworte kurz und hilfreich auf Deutsch."
+        },
+        {
+          role:"user",
+          content:text
+        }
+      ],
+
+      stream:true
+    });
+
+    for await(
+      const chunk of stream
+    ){
+
+      out.innerHTML +=
+      chunk.choices?.[0]?.delta?.content || "";
     }
-  });
 
-  state.textContent = "Bereit";
-};
+  }catch(error){
 
-document.getElementById("form").onsubmit = async (e) => {
-  e.preventDefault();
-  if (!engine) return;
+    out.innerHTML +=
+    "\nFehler: " + error.message;
 
-  const input = document.getElementById("input");
-  const text = input.value.trim();
-  if (!text) return;
-
-  input.value = "";
-
-  messages.push({ role: "user", content: text });
-
-  const assistantMsg = { role: "assistant", content: "" };
-  messages.push(assistantMsg);
-
-  render();
-
-  const assistantBubble = messagesEl.lastElementChild.querySelector(".bubble");
-
-  const stream = await engine.chat.completions.create({
-    messages,
-    stream: true
-  });
-
-  for await (const chunk of stream) {
-    const token = chunk.choices?.[0]?.delta?.content || "";
-    if (!token) continue;
-
-    assistantMsg.content += token;
-    assistantBubble.textContent = assistantMsg.content;
-    messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  save();
+  sendBtn.disabled = false;
 };
 
-document.getElementById("new").onclick = () => {
-  messages = [];
-  save();
-  render();
-};
-
-document.getElementById("clear").onclick = async () => {
-  if ("caches" in window) {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
-  }
-  localStorage.clear();
-  location.reload();
-};
 </script>
+
 </body>
 </html>
