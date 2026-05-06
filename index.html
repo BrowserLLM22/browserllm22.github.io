@@ -3,272 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lokale KI im Browser</title>
-
+<title>DeepSeek Lokal im Browser</title>
 <style>
-body{
-  margin:0;
-  padding:20px;
-  background:#0b1020;
-  color:white;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-}
-
-h1{
-  font-size:48px;
-  margin-bottom:20px;
-}
-
-.card{
-  background:#121a2f;
-  border-radius:24px;
-  padding:20px;
-  margin-bottom:20px;
-}
-
-textarea{
-  width:100%;
-  min-height:140px;
-  background:#09101f;
-  color:white;
-  border:none;
-  border-radius:18px;
-  padding:16px;
-  font-size:16px;
-  box-sizing:border-box;
-}
-
-select{
-  background:#09101f;
-  color:white;
-  border:none;
-  padding:12px;
-  border-radius:12px;
-}
-
-button{
-  margin-top:12px;
-  border:none;
-  background:#60a5fa;
-  color:black;
-  padding:14px 18px;
-  border-radius:999px;
-  font-weight:700;
-  cursor:pointer;
-}
-
-button:disabled{
-  opacity:.5;
-}
-
-.message{
-  margin-top:14px;
-  padding:14px;
-  border-radius:18px;
-  background:#1b2747;
-  white-space:pre-wrap;
-}
+body{margin:0;padding:20px;background:#0b1020;color:white;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+h1{font-size:42px;margin:0 0 20px}
+.card{background:#121a2f;border-radius:24px;padding:20px;margin-bottom:20px}
+textarea{width:100%;min-height:140px;background:#09101f;color:white;border:none;border-radius:18px;padding:16px;font-size:16px;box-sizing:border-box}
+select{width:100%;background:#09101f;color:white;border:none;border-radius:14px;padding:14px;font-size:16px}
+button{margin-top:12px;margin-right:8px;border:none;background:#60a5fa;color:black;padding:14px 18px;border-radius:999px;font-weight:700;cursor:pointer}
+button.secondary{background:#24304d;color:white}
+button:disabled{opacity:.5}
+.message{margin-top:14px;padding:14px;border-radius:18px;background:#1b2747;white-space:pre-wrap}
+#log{color:#cbd5e1}
 </style>
 </head>
-
 <body>
 
-<h1>Lokale KI im Browser</h1>
+<h1>DeepSeek lokal im Browser</h1>
 
 <div class="card">
+  <p id="status">Prüfe WebGPU...</p>
 
-<p id="status">
-Prüfe WebGPU...
-</p>
+  <select id="model">
+    <option value="DeepSeek-R1-Distill-Qwen-7B-q4f16_1-MLC">
+      DeepSeek R1 Distill Qwen 7B
+    </option>
+    <option value="DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC">
+      DeepSeek R1 Distill Llama 8B
+    </option>
+    <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">
+      Fallback: Qwen 0.5B
+    </option>
+  </select>
 
-<select id="model">
+  <button id="loadBtn">DeepSeek laden</button>
+  <button id="testBtn" class="secondary">Test-Prompt einsetzen</button>
 
-<option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">
-Qwen 0.5B
-</option>
-
-<option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">
-Llama 3.2 1B
-</option>
-
-</select>
-
-<br><br>
-
-<button id="loadBtn">
-Modell laden
-</button>
-
-<p id="log"></p>
-
+  <p id="log"></p>
 </div>
 
 <div class="card">
-
-<textarea
-id="prompt"
-placeholder="Nachricht eingeben..."
-></textarea>
-
-<button id="sendBtn" disabled>
-Senden
-</button>
-
-<div id="chat"></div>
-
+  <textarea id="prompt" placeholder="Nachricht eingeben..."></textarea>
+  <button id="sendBtn" disabled>Senden</button>
+  <div id="chat"></div>
 </div>
 
 <script type="module">
+const statusEl=document.getElementById("status");
+const logEl=document.getElementById("log");
+const loadBtn=document.getElementById("loadBtn");
+const sendBtn=document.getElementById("sendBtn");
+const testBtn=document.getElementById("testBtn");
+const promptEl=document.getElementById("prompt");
+const chatEl=document.getElementById("chat");
+const modelEl=document.getElementById("model");
 
-const statusEl =
-document.getElementById("status");
+let engine=null;
 
-const logEl =
-document.getElementById("log");
-
-const loadBtn =
-document.getElementById("loadBtn");
-
-const sendBtn =
-document.getElementById("sendBtn");
-
-const promptEl =
-document.getElementById("prompt");
-
-const chatEl =
-document.getElementById("chat");
-
-const modelEl =
-document.getElementById("model");
-
-let engine = null;
-
-if("gpu" in navigator){
-
-  statusEl.textContent =
-  "✅ WebGPU verfügbar";
-
-}else{
-
-  statusEl.textContent =
-  "❌ WebGPU nicht verfügbar";
-
-}
+statusEl.textContent=("gpu" in navigator)
+  ? "✅ WebGPU verfügbar"
+  : "❌ WebGPU nicht verfügbar. Auf iOS Safari brauchst du WebGPU-Unterstützung.";
 
 function addMessage(role,text){
-
-  const div =
-  document.createElement("div");
-
-  div.className = "message";
-
-  div.innerHTML =
-  "<b>" + role + ":</b><br>" + text;
-
+  const div=document.createElement("div");
+  div.className="message";
+  div.innerHTML="<b>"+role+":</b><br>"+text;
   chatEl.appendChild(div);
-
   return div;
 }
 
-loadBtn.onclick = async () => {
+testBtn.onclick=()=>{
+  promptEl.value="Löse diese Aufgabe Schritt für Schritt und gib am Ende nur das Ergebnis klar aus: Ein Zug fährt 180 km in 2 Stunden und 15 Minuten. Wie hoch ist seine Durchschnittsgeschwindigkeit in km/h?";
+};
 
-  loadBtn.disabled = true;
-
-  logEl.textContent =
-  "Lade WebLLM...";
+loadBtn.onclick=async()=>{
+  loadBtn.disabled=true;
+  sendBtn.disabled=true;
+  logEl.textContent="Lade WebLLM...";
 
   try{
+    const webllm=await import("https://esm.run/@mlc-ai/web-llm");
 
-    const webllm =
-    await import(
-      "https://esm.run/@mlc-ai/web-llm"
-    );
+    logEl.textContent="Lade DeepSeek-Modell. Das kann lange dauern und mehrere GB Speicher benötigen...";
 
-    logEl.textContent =
-    "Lade Modell...";
-
-    engine =
-    await webllm.CreateMLCEngine(
-      modelEl.value,
-      {
-        initProgressCallback:(p)=>{
-
-          logEl.textContent =
-          p.text || "Lade...";
-        }
+    engine=await webllm.CreateMLCEngine(modelEl.value,{
+      initProgressCallback:p=>{
+        logEl.textContent=p.text || "Lade Modell...";
       }
-    );
+    });
 
-    logEl.textContent =
-    "✅ Modell bereit";
-
-    sendBtn.disabled = false;
-
+    logEl.textContent="✅ Modell bereit. Inferenz läuft lokal im Browser.";
+    sendBtn.disabled=false;
   }catch(error){
-
     console.error(error);
-
-    logEl.textContent =
-    "Fehler: " + error.message;
-
-    loadBtn.disabled = false;
+    logEl.textContent="Fehler: "+error.message;
+    loadBtn.disabled=false;
   }
 };
 
-sendBtn.onclick = async () => {
-
-  const text =
-  promptEl.value.trim();
-
-  if(!text || !engine) return;
+sendBtn.onclick=async()=>{
+  const text=promptEl.value.trim();
+  if(!text||!engine)return;
 
   addMessage("Du",text);
+  promptEl.value="";
+  sendBtn.disabled=true;
 
-  promptEl.value = "";
-
-  sendBtn.disabled = true;
-
-  const out =
-  addMessage("KI","");
+  const out=addMessage("DeepSeek","");
 
   try{
-
-    const stream =
-    await engine.chat.completions.create({
-
+    const stream=await engine.chat.completions.create({
       messages:[
         {
           role:"system",
-          content:
-          "Antworte kurz und hilfreich auf Deutsch."
+          content:"Du bist DeepSeek lokal im Browser. Antworte auf Deutsch, logisch und präzise."
         },
         {
           role:"user",
           content:text
         }
       ],
-
+      temperature:0.6,
       stream:true
     });
 
-    for await(
-      const chunk of stream
-    ){
-
-      out.innerHTML +=
-      chunk.choices?.[0]?.delta?.content || "";
+    for await(const chunk of stream){
+      out.innerHTML+=chunk.choices?.[0]?.delta?.content || "";
     }
-
   }catch(error){
-
-    out.innerHTML +=
-    "\nFehler: " + error.message;
-
+    out.innerHTML+="\nFehler: "+error.message;
   }
 
-  sendBtn.disabled = false;
+  sendBtn.disabled=false;
 };
-
 </script>
 
 </body>
